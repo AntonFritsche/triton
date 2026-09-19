@@ -1,0 +1,66 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="DuplicatedCode" enabled="true" level="INFORMATION" enabled_by_default="true" />
+    <inspection_tool class="Eslint" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="PyMethodMayBeStaticInspection" enabled="true" level="INFORMATION" enabled_by_default="true" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <list>
+          <option value="skimage" />
+          <option value="argparse" />
+          <option value="PIL" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyPep8Inspection" enabled="true" level="INFORMATION" enabled_by_default="true">
+      <option name="ignoredErrors">
+        <list>
+          <option value="E303" />
+          <option value="E302" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyPep8NamingInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredErrors">
+        <list>
+          <option value="N812" />
+          <option value="N806" />
+          <option value="N801" />
+          <option value="N802" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyShadowingBuiltinsInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredNames">
+        <list>
+          <option value="open" />
+          <option value="dir" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyShadowingNamesInspection" enabled="false" level="INFORMATION" enabled_by_default="false" />
+    <inspection_tool class="PyStubPackagesAdvertiser" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <list>
+          <option value="pandas-stubs==2.2.3.250527" />
+          <option value="pandas" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyUnboundLocalVariableInspection" enabled="false" level="WARNING" enabled_by_default="false" />
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="builtins.str.*" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="SpellCheckingInspection" enabled="true" level="INFORMATION" enabled_by_default="true">
+      <option name="processCode" value="true" />
+      <option name="processLiterals" value="true" />
+      <option name="processComments" value="true" />
+    </inspection_tool>
+    <inspection_tool class="SqlNoDataSourceInspection" enabled="true" level="INFORMATION" enabled_by_default="true" />
+  </profile>
+</component>
