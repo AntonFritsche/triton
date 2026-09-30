@@ -2,7 +2,7 @@ import triton
 import triton.language as tl
 
 
-class ConvRelu:
+class ConvHardswish:
     @triton.autotune(
         configs=[
             triton.Config({'BLOCK_SIZE': 16}, num_warps=2, num_stages=2),
@@ -54,9 +54,26 @@ class ConvRelu:
                 # convolution
                 acc += tl.mul(image_block, weight)
 
-        # relu activation
-        acc = tl.where(acc > 0.0, acc, 0.0)
+        # hardswish activation
+        acc = tl.where(
+            acc <= -3.0,
+            0,
+            tl.where(
+                acc >= 3.0,
+                acc,
+                tl.div_rn(tl.mul(acc, (acc + 3.0)), 6.0)
+            )
+        )
+
+        sum = tl.sum(acc)
+        mean = sum / (BLOCK_M * BLOCK_N)
+
+        dev = acc - mean
+        var = tl.sum(dev ** 2) / (BLOCK_M * BLOCK_N)
+
+        acc = dev / tl.sqrt(var + 1e-5)
 
         out_ptr = out_ptr + (ry[:, None] * stride_out_y + rx[None, :] * stride_out_x)
         out_mask = (ry[:, None] < mat_y) & (rx[None, :] < mat_x)
         tl.store(out_ptr, acc, mask=out_mask)
+

@@ -57,6 +57,14 @@ class ConvRelu:
         # relu activation
         acc = tl.where(acc > 0.0, acc, 0.0)
 
+        sum = tl.sum(acc)
+        mean = sum / (BLOCK_M * BLOCK_N)
+
+        dev = acc - mean
+        var = tl.sum(dev ** 2) / (BLOCK_M * BLOCK_N)
+
+        acc = dev / tl.sqrt(var + 1e-5)
+
         out_ptr = out_ptr + (ry[:, None] * stride_out_y + rx[None, :] * stride_out_x)
         out_mask = (ry[:, None] < mat_y) & (rx[None, :] < mat_x)
         tl.store(out_ptr, acc, mask=out_mask)

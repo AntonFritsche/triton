@@ -45,8 +45,8 @@ class ConvRrelu:
         acc = tl.zeros((BLOCK_M, BLOCK_N), dtype=tl.float32)
         for ky in range(kernel_dim):
             for kx in range(kernel_dim):
-                kernel_ptr = kernel_ptr + (ky * kernel_dim + kx)  # kernel[ky, kx]
-                weight = tl.load(kernel_ptr)  # loading one weight from the kernel
+                current_kernel_ptr = kernel_ptr + (ky * kernel_dim + kx)  # kernel[ky, kx]
+                weight = tl.load(current_kernel_ptr)  # loading one weight from the kernel
 
                 current_mat_ptr = mat + (ky * stride_ay + kx * stride_ax)  # loading current mat section (starting point)
 
