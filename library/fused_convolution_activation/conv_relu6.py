@@ -3,6 +3,20 @@ import triton.language as tl
 
 
 class ConvRelu6:
+    def __init__(
+        self,
+        in_features: int,
+        out_features: int,
+        filter_dim: int,
+        stride: int,
+        padding: bool = False
+    ):
+        self.in_features = in_features
+        self.out_features = out_features
+        self.filter_dim = filter_dim
+        self.stride = stride
+        self.padding = padding
+
     @triton.autotune(
         configs=[
             triton.Config({'BLOCK_SIZE': 16}, num_warps=2, num_stages=2),
@@ -68,3 +82,11 @@ class ConvRelu6:
         out_ptr = out_ptr + (ry[:, None] * stride_out_y + rx[None, :] * stride_out_x)
         out_mask = (ry[:, None] < mat_y) & (rx[None, :] < mat_x)
         tl.store(out_ptr, acc, mask=out_mask)
+
+    def get_params(self):
+        params = {
+            'type_operation': '',
+            'memory_usage': 0,
+        }
+
+        return params

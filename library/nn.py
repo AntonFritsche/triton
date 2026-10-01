@@ -3,9 +3,10 @@ import torch
 
 # noinspection unsupported-operator
 class nn:
-    def __init__(self):
+    def __init__(self, max_group_size: int):
         self.layers = []
         self.depth_nn = len(self.layers)
+        self.max_group_size = max_group_size
 
         self.dev = torch.cuda.current_device()
         self.props = torch.cuda.get_device_properties(self.dev)
@@ -52,14 +53,20 @@ class nn:
             param_information = layer.get_params()
 
             if param_information.type_operation == 'pointwise':
-                if current_memory_sum_pointwise_group < self.shared_mem_per_block_kb:
+                if current_memory_sum_pointwise_group < self.shared_mem_per_block_kb and len(group_pointwise) < self.max_group_size:
+                    # new group element in pointwise fused operation group
                     group_pointwise.append(layer)
+
+                    # updating memory usage of the whole group
                     current_memory_sum_pointwise_group += param_information.memory_usage
                 elif current_memory_sum_pointwise_group + param_information.memory_usage > self.shared_mem_per_block_kb:
                     grouping_dict[f"pointwise group {layer_idx}"] = group_pointwise
             elif param_information.type_operation == 'reduction':
-                if current_memory_sum_reduction_group < self.shared_mem_per_block_kb:
+                if current_memory_sum_reduction_group < self.shared_mem_per_block_kb and len(group_reduction) < self.max_group_size:
+                    # new group element in reduction fused operation group
                     group_reduction.append(layer)
+
+                    # updating memory usage of the whole group
                     current_memory_sum_reduction_group += param_information.memory_usage
                 elif current_memory_sum_reduction_group + param_information.memory_usage > self.shared_mem_per_block_kb:
                     grouping_dict[f"reduction group {layer_idx}"] = group_reduction
