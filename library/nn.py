@@ -1,6 +1,7 @@
 import torch
 
 
+# noinspection unsupported-operator
 class nn:
     def __init__(self):
         self.layers = []
@@ -10,19 +11,23 @@ class nn:
         self.props = torch.cuda.get_device_properties(self.dev)
 
         # shared memory (L1 Cache) per SM
-        self.shared_mem_per_block_kb = self.props.shared_memory_per_block / 1024
+        self.shared_mem_per_block_kb = getattr(self.props, 'shared_memory_per_block', 0)
+        if self.shared_mem_per_block_kb != 0:
+            self.shared_mem_per_block_kb /= 1024
 
         # max shared memory per LM with dynamic allocation
-        self.shared_mem_optin_kb = getattr(self.props, "shared_memory_per_multiprocessor", None)
-        if self.shared_mem_optin_kb:
+        self.shared_mem_optin_kb = getattr(self.props, 'shared_memory_per_multiprocessor', 0)
+        if self.shared_mem_optin_kb != 0:
             self.shared_mem_optin_kb /= 1024
 
         # sram (L2 Cache)
-        self.l2_cache_size_mb = getattr(self.props, "l2_cache_size", 0) / (1024 ** 2)
+        self.l2_cache_size_mb = getattr(self.props, 'l2_cache_size', 0)
+        if self.l2_cache_size_mb != 0:
+            self.l2_cache_size_mb /= (1024 ** 2)
 
         # SM and register count
-        self.num_sms = self.props.multi_processor_count
-        self.regs_per_block = self.props.regs_per_block
+        self.num_sms = getattr(self.props, 'multi_processor_count', 0)
+        self.regs_per_block = getattr(self.props, 'regs_per_block', 0)
 
         # forward + backward propagation
         self.forward_propagation = []
