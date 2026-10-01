@@ -3,6 +3,22 @@ import triton.language as tl
 
 
 class ConvLeakyReLU:
+    def __init__(
+        self,
+        in_features: int,
+        out_features: int,
+        filter_dim: int,
+        stride: int,
+        negative_slope: float = 0.01,
+        padding: bool = False
+    ):
+        self.in_features = in_features
+        self.out_features = out_features
+        self.filter_dim = filter_dim
+        self.stride = stride
+        self.negative_slope = negative_slope
+        self.padding = padding
+
     @triton.autotune(
         configs=[
             triton.Config({'BLOCK_SIZE': 16}, num_warps=2, num_stages=2),
@@ -26,7 +42,7 @@ class ConvLeakyReLU:
             stride_out_y: int,
             stride_out_x: int,
             BLOCK_SIZE: tl.constexpr,
-            negative_slope: float = 0.01,
+            negative_slope: float = self.negative_slope,
     ):
         # META Parameters
         BLOCK_M = BLOCK_SIZE
@@ -77,3 +93,10 @@ class ConvLeakyReLU:
         out_mask = (ry[:, None] < mat_y) & (rx[None, :] < mat_x)
         tl.store(out_ptr, acc, mask=out_mask)
 
+    def get_params(self):
+        params = {
+            'type_operation': '',
+            'memory_usage': 0,
+        }
+
+        return params

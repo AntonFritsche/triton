@@ -3,6 +3,24 @@ import triton.language as tl
 
 
 class ConvHardtanh:
+    def __init__(
+        self,
+        in_features: int,
+        out_features: int,
+        filter_dim: int,
+        stride: int,
+        min_val: float = -1.0,
+        max_val: float = 1.0,
+        padding: bool = False
+    ):
+        self.in_features = in_features
+        self.out_features = out_features
+        self.filter_dim = filter_dim
+        self.stride = stride
+        self.min_val = min_val
+        self.max_val = max_val
+        self.padding = padding
+
     @triton.autotune(
         configs=[
             triton.Config({'BLOCK_SIZE': 16}, num_warps=2, num_stages=2),
@@ -26,8 +44,8 @@ class ConvHardtanh:
             stride_out_y: int,
             stride_out_x: int,
             BLOCK_SIZE: tl.constexpr,
-            min_val: float = -1.0,
-            max_val: float = 1.0,
+            min_val: float = self.min_val,
+            max_val: float = self.max_val,
     ):
         # META Parameters
         BLOCK_M = BLOCK_SIZE

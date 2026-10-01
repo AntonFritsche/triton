@@ -11,12 +11,14 @@ class ConvELU:
         out_features: int,
         filter_dim: int,
         stride: int,
+        alpha: float = 1.0,
         padding: bool = False
     ):
         self.in_features = in_features
         self.out_features = out_features
         self.filter_dim = filter_dim
         self.stride = stride
+        self.alpha = alpha
         self.padding = padding
 
     @triton.autotune(
@@ -42,7 +44,7 @@ class ConvELU:
         stride_out_y: int,
         stride_out_x: int,
         BLOCK_SIZE: tl.constexpr,
-        alpha: float = 1.0,
+        alpha: float = self.alpha,
     ):
         # META Parameters
         BLOCK_M = BLOCK_SIZE
