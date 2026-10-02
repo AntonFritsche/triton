@@ -8,13 +8,16 @@ class ConvHardshrink:
         in_features: int,
         out_features: int,
         filter_dim: int,
+        alpha: float,
         stride: int,
+
         padding: bool = False
     ):
         self.in_features = in_features
         self.out_features = out_features
         self.filter_dim = filter_dim
         self.stride = stride
+        self.alpha = alpha
         self.padding = padding
 
     @triton.autotune(
@@ -40,7 +43,7 @@ class ConvHardshrink:
             stride_out_y: int,
             stride_out_x: int,
             BLOCK_SIZE: tl.constexpr,
-            alpha: float = 0.5,
+            alpha: tl.constexpr,
     ):
         # META Parameters
         BLOCK_M = BLOCK_SIZE

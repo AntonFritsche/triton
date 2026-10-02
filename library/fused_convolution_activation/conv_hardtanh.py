@@ -9,12 +9,16 @@ class ConvHardtanh:
         out_features: int,
         filter_dim: int,
         stride: int,
+        min_val: float,
+        max_val: float,
         padding: bool = False
     ):
         self.in_features = in_features
         self.out_features = out_features
         self.filter_dim = filter_dim
         self.stride = stride
+        self.min_val = min_val
+        self.max_val = max_val
         self.padding = padding
 
     @triton.autotune(
@@ -40,8 +44,8 @@ class ConvHardtanh:
             stride_out_y: int,
             stride_out_x: int,
             BLOCK_SIZE: tl.constexpr,
-            min_val: float = -1.0,
-            max_val: float = 1.0,
+            min_val: tl.constexpr,
+            max_val: tl.constexpr,
     ):
         # META Parameters
         BLOCK_M = BLOCK_SIZE

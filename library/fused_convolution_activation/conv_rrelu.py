@@ -9,12 +9,16 @@ class ConvRrelu:
         out_features: int,
         filter_dim: int,
         stride: int,
+        lower: float = 1.0/8.0,
+        upper: float = 1.0/3.0,
         padding: bool = False
     ):
         self.in_features = in_features
         self.out_features = out_features
         self.filter_dim = filter_dim
         self.stride = stride
+        self.lower = lower
+        self.upper = upper
         self.padding = padding
 
     @triton.autotune(
@@ -40,8 +44,8 @@ class ConvRrelu:
             stride_out_y: int,
             stride_out_x: int,
             BLOCK_SIZE: tl.constexpr,
-            lower: float = 1.0/8.0,
-            upper: float = 1.0/3.0,
+            lower: tl.constexpr,
+            upper: tl.constexpr,
     ):
         # META Parameters
         BLOCK_M = BLOCK_SIZE

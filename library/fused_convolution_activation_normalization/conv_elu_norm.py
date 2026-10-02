@@ -42,7 +42,7 @@ class ConvELUNorm:
         stride_out_y: int,
         stride_out_x: int,
         BLOCK_SIZE: tl.constexpr,
-        alpha: float = self.alpha,
+        alpha: tl.constexpr,
     ):
         # META Parameters
         BLOCK_M = BLOCK_SIZE

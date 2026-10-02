@@ -42,7 +42,7 @@ class ConvLeakyReLU:
             stride_out_y: int,
             stride_out_x: int,
             BLOCK_SIZE: tl.constexpr,
-            negative_slope: float = self.negative_slope,
+            negative_slope: tl.constexpr,
     ):
         # META Parameters
         BLOCK_M = BLOCK_SIZE

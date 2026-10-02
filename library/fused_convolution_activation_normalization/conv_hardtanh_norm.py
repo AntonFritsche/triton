@@ -44,8 +44,8 @@ class ConvHardtanh:
             stride_out_y: int,
             stride_out_x: int,
             BLOCK_SIZE: tl.constexpr,
-            min_val: float = self.min_val,
-            max_val: float = self.max_val,
+            min_val: tl.constexpr,
+            max_val: tl.constexpr,
     ):
         # META Parameters
         BLOCK_M = BLOCK_SIZE

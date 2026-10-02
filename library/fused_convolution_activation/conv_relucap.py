@@ -9,12 +9,14 @@ class ConvRelucap:
         out_features: int,
         filter_dim: int,
         stride: int,
+        upper: float,
         padding: bool = False
     ):
         self.in_features = in_features
         self.out_features = out_features
         self.filter_dim = filter_dim
         self.stride = stride
+        self.upper = upper
         self.padding = padding
 
     @triton.autotune(
@@ -40,7 +42,7 @@ class ConvRelucap:
             stride_out_y: int,
             stride_out_x: int,
             BLOCK_SIZE: tl.constexpr,
-            upper: float = 3.0
+            upper: tl.constexpr
     ):
         # META Parameters
         BLOCK_M = BLOCK_SIZE
