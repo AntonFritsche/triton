@@ -74,3 +74,9 @@ class nn:
                 raise Exception(f"Unsupported operation: Available Operations: pointwise, reduction")
 
         return grouping_dict
+
+    def generate_execution(self):
+        groups = self.calculate_grouping()
+
+
+
