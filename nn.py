@@ -1,6 +1,7 @@
 import torch
 import json
-import subprocess
+import importlib
+import sys
 from pathlib import Path
 
 
@@ -38,8 +39,16 @@ class nn:
         self.forward_propagation = []
         self.backward_propagation = []
 
-    def __call__(self, *args, **kwargs):
-        return
+    def __call__(self, data):
+        if len(self.forward_propagation) == 0:
+            raise Exception("No layers / fused kernels ready for forward propagation!")
+
+        current_data = data
+
+        for kernel_function in self.forward_propagation:
+            current_data = kernel_function(current_data)
+
+        return current_data
 
     def add(self, layer):
         self.layers.append(layer)
@@ -92,14 +101,26 @@ class nn:
     def generate_execution(self):
         groups = self.calculate_grouping()
 
+        if "library" not in sys.path:
+            sys.path.append("library")
+
         for key, group in groups.items():
             operation_type = key.split("-")[0]
             operation_name = key.split("-")[1]
 
-            fused_folder = [str(p) for p in Path("library").glob(f"fused_{operation_type}") if p.is_dir()][0]
-            fused_kernel = [str(p) for p in Path(fused_folder).glob(f"{operation_name}.py") if p.is_dir()][0]
+            module_name = f"library.fused_{operation_type}.{operation_name}"
 
-            self.forward_propagation.append(fused_kernel)
+            try:
+                module = importlib.import_module(module_name)
+
+                kernel_func = getattr(module, 'forward_kernel')
+
+                self.forward_propagation.append(kernel_func)
+
+            except ImportError as e:
+                raise Exception(f"Error while importing {module_name}: {e}")
+            except AttributeError as e:
+                raise Exception(f"The function 'forward_kernel' was not found in {module_name}: {e}")
 
     def train(
         self,
@@ -118,5 +139,13 @@ class nn:
             batched_data.append(batch)
 
 
-        for epoch in range(epochs):
-            return
+        for epoch_idx in range(epochs):
+            for batch_idx in range(num_batches):
+                current_batch = batched_data[batch_idx]
+
+                for kernel_function in self.forward_propagation:
+                    current_data = kernel_function(current_data)
+
+
+
+                for kernel_function in self.backward_propagation:
