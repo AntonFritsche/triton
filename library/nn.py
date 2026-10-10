@@ -1,4 +1,8 @@
 import torch
+import json
+import subprocess
+from pathlib import Path
+
 
 
 # noinspection unsupported-operator
@@ -34,6 +38,9 @@ class nn:
         self.forward_propagation = []
         self.backward_propagation = []
 
+    def __call__(self, *args, **kwargs):
+        return
+
     def add(self, layer):
         self.layers.append(layer)
 
@@ -60,7 +67,14 @@ class nn:
                     # updating memory usage of the whole group
                     current_memory_sum_pointwise_group += param_information.memory_usage
                 elif current_memory_sum_pointwise_group + param_information.memory_usage > self.shared_mem_per_block_kb:
-                    grouping_dict[f"pointwise group {layer_idx}"] = group_pointwise
+                    gen_operation_string = ""
+                    spec_operation_string = ""
+
+                    for operation in group_pointwise:
+                        gen_operation_string += operation.operation_type + "_"
+                        spec_operation_string += operation.operation_name + "_"
+
+                    grouping_dict[f"{gen_operation_string}-{spec_operation_string}-{layer_idx}"] = group_pointwise
             elif param_information.type_operation == 'reduction':
                 if current_memory_sum_reduction_group < self.shared_mem_per_block_kb and len(group_reduction) < self.max_group_size:
                     # new group element in reduction fused operation group
@@ -78,5 +92,31 @@ class nn:
     def generate_execution(self):
         groups = self.calculate_grouping()
 
+        for key, group in groups.items():
+            operation_type = key.split("-")[0]
+            operation_name = key.split("-")[1]
+
+            fused_folder = [str(p) for p in Path("library").glob(f"fused_{operation_type}") if p.is_dir()][0]
+            fused_kernel = [str(p) for p in Path(fused_folder).glob(f"{operation_name}.py") if p.is_dir()][0]
+
+            self.forward_propagation.append(fused_kernel)
+
+    def train(
+        self,
+        data: list,
+        batch_size: int,
+        epochs: int,
+        learning_rate: float,
+    ):
+        batched_data = []
+        data_size = len(data)
+        num_batches = data_size // batch_size
+
+        batch = []
+        for i in range(num_batches):
+            batch.append(data[i * batch_size : (i + 1) * batch_size])
+            batched_data.append(batch)
 
 
+        for epoch in range(epochs):
+            return
