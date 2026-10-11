@@ -8,9 +8,10 @@ from pathlib import Path
 
 # noinspection unsupported-operator
 class nn:
-    def __init__(self, max_group_size: int):
+    def __init__(self, max_group_size: int, error_function):
         self.layers = []
         self.depth_nn = len(self.layers)
+        self.error_function = error_function
         self.max_group_size = max_group_size
 
         self.dev = torch.cuda.current_device()
@@ -124,28 +125,47 @@ class nn:
 
     def train(
         self,
-        data: list,
+        train_data: list,
+        labels: list,
+        test_data: list,
         batch_size: int,
         epochs: int,
         learning_rate: float,
     ):
-        batched_data = []
-        data_size = len(data)
-        num_batches = data_size // batch_size
+        batched_train_data, batched_test_data = [], []
+        train_data_size, test_data_size = len(train_data), len(test_data)
+
+        if train_data_size != test_data_size:
+            raise Exception(f"Training and testing data sizes do not match: {train_data_size}, {test_data_size}")
+
+        num_batches = train_data_size // batch_size
 
         batch = []
         for i in range(num_batches):
-            batch.append(data[i * batch_size : (i + 1) * batch_size])
-            batched_data.append(batch)
+            batch.append([
+                train_data[i * batch_size: (i + 1) * batch_size],
+                labels[i * batch_size: (i + 1) * batch_size],
+            ])
+            batched_train_data.append(batch)
 
+        batch = []
+        for i in range(num_batches):
+            batch.append(test_data[i * batch_size: (i + 1) * batch_size])
+            batched_test_data.append(batch)
 
         for epoch_idx in range(epochs):
             for batch_idx in range(num_batches):
-                current_batch = batched_data[batch_idx]
+                current_batch = batched_train_data[batch_idx]
 
+                current_data = current_batch
                 for kernel_function in self.forward_propagation:
                     current_data = kernel_function(current_data)
 
+                error = 0
+                for i in range(batch_size):
+                    error += self.error_function(current_data[i], labels[i])
 
+                error /= batch_size
 
                 for kernel_function in self.backward_propagation:
+
