@@ -126,8 +126,9 @@ class nn:
     def train(
         self,
         train_data: list,
-        labels: list,
+        train_labels: list,
         test_data: list,
+        test_labels: list,
         batch_size: int,
         epochs: int,
         learning_rate: float,
@@ -138,24 +139,43 @@ class nn:
         if train_data_size != test_data_size:
             raise Exception(f"Training and testing data sizes do not match: {train_data_size}, {test_data_size}")
 
-        num_batches = train_data_size // batch_size
+        num_train_batches = train_data_size // batch_size
+        num_test_batches = test_data_size // batch_size
 
-        batch = []
-        for i in range(num_batches):
-            batch.append([
+        # train batches
+        for i in range(num_train_batches):
+            batch = [
                 train_data[i * batch_size: (i + 1) * batch_size],
-                labels[i * batch_size: (i + 1) * batch_size],
-            ])
+                train_labels[i * batch_size: (i + 1) * batch_size],
+            ]
             batched_train_data.append(batch)
 
-        batch = []
-        for i in range(num_batches):
-            batch.append(test_data[i * batch_size: (i + 1) * batch_size])
+        # test batches
+        for i in range(num_test_batches):
+            batch = [
+                test_data[i * batch_size: (i + 1) * batch_size],
+                test_labels[i * batch_size: (i + 1) * batch_size],
+            ]
             batched_test_data.append(batch)
 
         for epoch_idx in range(epochs):
-            for batch_idx in range(num_batches):
+            forward_passes = []
+
+            # train phase
+            for batch_idx in range(num_train_batches):
+                forward_pass = []
                 current_batch = batched_train_data[batch_idx]
+
+                current_data = current_batch
+                for kernel_function in self.forward_propagation:
+                    current_data = kernel_function(current_data)
+                    forward_pass.append(kernel_function(current_data))
+
+                forward_passes.append(forward_pass)
+
+            # test phase
+            for batch_idx in range(num_test_batches):
+                current_batch = batched_test_data[batch_idx]
 
                 current_data = current_batch
                 for kernel_function in self.forward_propagation:
@@ -163,9 +183,10 @@ class nn:
 
                 error = 0
                 for i in range(batch_size):
-                    error += self.error_function(current_data[i], labels[i])
+                    error += self.error_function(current_data[i], test_labels[i])
 
                 error /= batch_size
 
-                for kernel_function in self.backward_propagation:
+            current_data = error
 
+            for kernel_function in self.backward_propagation:
